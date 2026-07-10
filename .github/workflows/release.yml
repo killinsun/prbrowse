@@ -10,18 +10,17 @@ permissions:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14
-            target: darwin-arm64
-          - os: macos-13
-            target: darwin-amd64
-          - os: ubuntu-latest
-            target: linux-amd64
-
-    runs-on: ${{ matrix.os }}
+          - bun_target: bun-darwin-arm64
+            asset: darwin-arm64
+          - bun_target: bun-darwin-x64
+            asset: darwin-amd64
+          - bun_target: bun-linux-x64
+            asset: linux-amd64
 
     steps:
       - uses: actions/checkout@v4
@@ -39,22 +38,24 @@ jobs:
       - name: Compile
         run: |
           mkdir -p dist
-          bun build --compile --outfile "dist/prbrowse" src/cli.tsx
+          bun build --compile --target="${{ matrix.bun_target }}" \
+            --outfile "dist/prbrowse" src/cli.tsx
           chmod +x dist/prbrowse
 
       - name: Package
         run: |
           cd dist
-          tar -czf "../prbrowse-${{ matrix.target }}.tar.gz" prbrowse
+          tar -czf "../prbrowse-${{ matrix.asset }}.tar.gz" prbrowse
           cd ..
-          shasum -a 256 "prbrowse-${{ matrix.target }}.tar.gz" > "prbrowse-${{ matrix.target }}.sha256"
+          shasum -a 256 "prbrowse-${{ matrix.asset }}.tar.gz" \
+            > "prbrowse-${{ matrix.asset }}.sha256"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: prbrowse-${{ matrix.target }}
+          name: prbrowse-${{ matrix.asset }}
           path: |
-            prbrowse-${{ matrix.target }}.tar.gz
-            prbrowse-${{ matrix.target }}.sha256
+            prbrowse-${{ matrix.asset }}.tar.gz
+            prbrowse-${{ matrix.asset }}.sha256
 
   release:
     needs: build
@@ -72,6 +73,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF_NAME}"
+          # Recreate if a previous attempt left a draft/empty release
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release delete "$tag" --yes || true
+          fi
           gh release create "$tag" \
             --title "$tag" \
             --generate-notes \
