@@ -1,0 +1,42 @@
+{
+  "name": "prbrowse",
+  "version": "0.1.0",
+  "description": "Browse PR review comments in a TUI; open inline comments in Hunk",
+  "type": "module",
+  "bin": {
+    "prbrowse": "./src/cli.tsx"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.tsx",
+    "start": "bun run src/cli.tsx",
+    "typecheck": "tsc --noEmit",
+    "smoke": "bun run scripts/smoke.ts",
+    "build": "bun build --compile --outfile=dist/prbrowse src/cli.tsx"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/killinsun/prbrowse.git"
+  },
+  "homepage": "https://github.com/killinsun/prbrowse",
+  "bugs": {
+    "url": "https://github.com/killinsun/prbrowse/issues"
+  },
+  "keywords": ["github", "pr", "review", "tui", "hunk"],
+  "author": "killinsun",
+  "license": "MIT",
+  "engines": {
+    "bun": ">=1.1"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "ink": "^7.1.0",
+    "react": "^19.2.7",
+    "react-devtools-core": "file:./vendor/react-devtools-core",
+    "smol-toml": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.17",
+    "typescript": "^5.9.3"
+  }
+}

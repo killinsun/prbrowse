@@ -1,0 +1,10 @@
+{
+  "name": "react-devtools-core",
+  "version": "0.0.0-stub",
+  "description": "Stub so bun --compile can bundle ink without optional react-devtools-core",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  }
+}
