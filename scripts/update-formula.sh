@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
-# Generate a Homebrew formula snippet for the given version after a GitHub Release exists.
-# Usage: ./scripts/update-formula.sh v0.1.0
+# Generate Formula/prbrowse.rb for killinsun/homebrew-tap after a GitHub Release.
+# Usage: ./scripts/update-formula.sh v0.1.1
 set -euo pipefail
 
 VERSION="${1:?version required, e.g. v0.1.0}"
 VERSION="${VERSION#v}"
-BASE="https://github.com/killinsun/prbrowse/releases/download/v${VERSION}"
+REPO="killinsun/prbrowse"
+BASE="https://github.com/${REPO}/releases/download/v${VERSION}"
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+gh release download "v${VERSION}" -R "$REPO" -D "$tmpdir" \
+  -p 'prbrowse-*.sha256'
 
 sha() {
   local file="$1"
-  curl -fsSL "${BASE}/${file}.sha256" | awk '{print $1}'
+  awk '{print $1}' "${tmpdir}/${file}.sha256"
 }
 
 ARM_SHA="$(sha prbrowse-darwin-arm64.tar.gz)"
@@ -19,7 +26,7 @@ LINUX_SHA="$(sha prbrowse-linux-amd64.tar.gz)"
 cat <<EOF
 class Prbrowse < Formula
   desc "Browse GitHub PR review comments in a TUI"
-  homepage "https://github.com/killinsun/prbrowse"
+  homepage "https://github.com/${REPO}"
   version "${VERSION}"
   license "MIT"
 
